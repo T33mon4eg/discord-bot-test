@@ -12,9 +12,12 @@ bot = commands.Bot(command_prefix='/', help_command=None, intents=disnake.Intent
 async def on_ready():
     print(f'Bot {bot.user} is ready to work!')
 
-@bot.slash_command(description='Пинг-понг')
-async def ping(inter):
-    await inter.response.send_message('Понг!')
+bot.load_extension('cogs.ping') #расширение .py указывать не нужно
+#Для загрузки всех когов из папки cogs можно использовать bot.load_extensions('cogs')
+
+# @bot.slash_command(description='Пинг-понг')
+# async def ping(inter):
+#     await inter.response.send_message('Понг!')
 
 @bot.slash_command()
 async def server(inter):
