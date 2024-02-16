@@ -1,3 +1,5 @@
+from typing import List
+
 import asyncio
 import datetime
 import os
@@ -16,7 +18,7 @@ api_instance = giphy_client.DefaultApi()
 
 api_key = os.environ['GIPHY_TOKEN']
 
-channel_id = 1101119052488908891
+channel_id = 1174985885960384615
 
 class Birthday(commands.Cog):
 
@@ -24,31 +26,41 @@ class Birthday(commands.Cog):
         self.bot = bot
         self.birthday_check.start()
         cursor.execute("CREATE TABLE IF NOT EXISTS birthdays "
-                       "(user_id INTEGER PRIMARY KEY, birthdate DATE, user_mention TEXT)")
+                       "(user_id INTEGER PRIMARY KEY, user_mention TEXT, birthdate DATE, display_name TEXT)")
 
     @commands.slash_command()
     async def set_birthday(self, ctx, user: disnake.Member, birthdate):
-        """Записать в базу данных пользователя и его дату рождения в формате ДД.ММ.ГГГГ"""
+
+        """
+        Записать в базу данных пользователя и его дату рождения в формате ДД.ММ.ГГГГ
+
+        Parameters
+        ----------
+        user: Пользователь
+        birthdate: Дата рождения в формате ДД.ММ.ГГГГ
+        """
+
         user_id = user.id
+        display_name = user.display_name
         user_mention = user.mention
 
         # парсим дату рождения из строки в формате ДД.ММ.ГГГГ
         try:
             birthdate_obj = datetime.datetime.strptime(birthdate, '%d.%m.%Y').date()
         except ValueError:
-            await ctx.send("Неверный формат даты. Используйте формат ДД.ММ.ГГГГ (например 01.01.1900")
+            await ctx.send("❌**Неверный формат даты.❌** Используйте формат `ДД.ММ.ГГГГ` (например `01.01.1900`)", ephemeral=True)
             return
 
         # сохраняем дату рождения в базу данных
         cursor.execute(
-            "INSERT INTO birthdays (user_id, birthdate, user_mention) VALUES (?, ?, ?) "
+            "INSERT INTO birthdays (user_id, user_mention, birthdate, display_name) VALUES (?, ?, ?, ?) "
             "ON CONFLICT(user_id) DO UPDATE SET birthdate=excluded.birthdate",
-            (user_id, birthdate_obj, user_mention))
+            (user_id, user_mention, birthdate_obj, display_name))
         connection.commit()
 
         embed = disnake.Embed(title='Запись дня рождения',
-                              description=f"Дата рождения {birthdate_obj} для пользователя {user.mention} сохранена.",
-                              colour=user.colour)
+                              description=f"Дата рождения `{birthdate_obj}` для пользователя {user.mention} сохранена.",
+                              colour=disnake.Colour.random())
         embed.set_thumbnail(url=user.avatar.url)
         await ctx.send(embed=embed, ephemeral=True)
 
@@ -58,6 +70,7 @@ class Birthday(commands.Cog):
         """Вывести полный список пользователей и их даты рождения"""
         cursor.execute("SELECT user_mention, birthdate FROM birthdays ORDER BY birthdate")
         full_list_bdays = cursor.fetchall()
+        print(full_list_bdays)
         text = ''
         for _ in full_list_bdays:
             text += f'Пользователь {_[0]}, дата рождения {_[1]}\n'
@@ -78,14 +91,11 @@ class Birthday(commands.Cog):
                 gif_id = random_birthday_gif.data.id
                 embed = disnake.Embed(title='🥳День рождения🥳',
                                       description=f"Сегодня празднует свой день рождения - {user.mention}",
-                                      colour=0x00ff00 if user.banner else user.accent_color)
+                                      colour=disnake.Colour.random())
                 embed.set_thumbnail(url=user.avatar.url)
                 embed.set_image(url=f'https://media.giphy.com/media/{gif_id}/giphy.gif')
                 await asyncio.sleep(5)
                 await channel.send(embed=embed)
-
-        # else:
-        #     await channel.send('Никто сегодня не празднует день рождения :(')
 
 
     @birthday_check.before_loop
@@ -97,8 +107,6 @@ class Birthday(commands.Cog):
         """Запуск команды проверки дней рождений"""
         self.birthday_check.restart()
         await inter.response.send_message("Задача birthday_check запущена вручную")
-
-
 
 def setup(bot):
     bot.add_cog(Birthday(bot))

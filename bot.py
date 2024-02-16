@@ -28,8 +28,25 @@ async def server(inter):
 
 @bot.slash_command()
 async def user(inter, user: disnake.Member):
-    """Информация о пользоваетеле"""
-    await inter.response.send_message(f"Ваш тег: {user.display_name}\nВаш ID: {user.id}", ephemeral=True)
+    """Информация о пользователе"""
+    await inter.response.send_message(f"accentcolor: {user.accent_color}\n"
+                                      f"accentcolour: {user.accent_colour}\n"
+                                      f"avatar: {user.avatar.url}\n"
+                                      f"banner: {user.banner}\n"
+                                      f"bot: {user.bot}\n"
+                                      f"color: {user.color}\n"
+                                      f"colour: {user.colour}\n"
+                                      f"created_at: {user.created_at}\n"
+                                      f"defaultavatar: {user.default_avatar}\n"
+                                      f"discriminator: {user.discriminator}\n"
+                                      f"displayavatar: {user.display_avatar}\n"
+                                      f"displayname: {user.display_name}\n"
+                                      f"ID: {user.id}\n"
+                                      f"mention: {user.mention}\n"
+                                      f"name: {user.name}\n"
+                                      f"publicflags: {user.public_flags}\n"
+                                      f"system: {user.system}",
+                                      ephemeral=True)
 
 @bot.command()
 async def cute(inter):
