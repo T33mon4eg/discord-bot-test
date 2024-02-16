@@ -8,7 +8,6 @@ connection = sqlite3.connect('birthdays.db')
 cursor = connection.cursor()
 
 
-# Defines a simple paginator of buttons for the embed.
 class Menu(disnake.ui.View):
     def __init__(self, embeds: List[disnake.Embed]):
         super().__init__(timeout=None)
@@ -60,10 +59,10 @@ class Menu(disnake.ui.View):
 
 
 @commands.slash_command()
-async def paginator(inter: disnake.ApplicationCommandInteraction):
+async def showallbdays(inter: disnake.ApplicationCommandInteraction):
     """Вывести весь список дней рождений"""
     cursor.execute("SELECT user_mention, birthdate FROM birthdays ORDER BY birthdate")
-    # Предположим, что ваши данные хранятся в переменной db_data
+    # Получаем данные
     db_data = cursor.fetchall()
 
     # Разбиваем данные на списки по 10 записей
@@ -84,7 +83,5 @@ async def paginator(inter: disnake.ApplicationCommandInteraction):
     await inter.response.send_message(embed=embeds[0], view=Menu(embeds))
 
 
-
-
 def setup(bot):
-    bot.add_slash_command(paginator)
+    bot.add_slash_command(showallbdays)

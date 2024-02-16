@@ -1,5 +1,3 @@
-from typing import List
-
 import asyncio
 import datetime
 import os
@@ -10,7 +8,6 @@ from disnake.ext import commands, tasks
 import giphy_client
 from giphy_client.rest import ApiException
 
-
 connection = sqlite3.connect('birthdays.db')
 cursor = connection.cursor()
 
@@ -18,7 +15,8 @@ api_instance = giphy_client.DefaultApi()
 
 api_key = os.environ['GIPHY_TOKEN']
 
-channel_id = 1174985885960384615
+channel_id = 1103650932257984552
+
 
 class Birthday(commands.Cog):
 
@@ -44,11 +42,12 @@ class Birthday(commands.Cog):
         display_name = user.display_name
         user_mention = user.mention
 
-        # парсим дату рождения из строки в формате ДД.ММ.ГГГГ
+        #парсим дату рождения из строки в формате ДД.ММ.ГГГГ
         try:
             birthdate_obj = datetime.datetime.strptime(birthdate, '%d.%m.%Y').date()
         except ValueError:
-            await ctx.send("❌**Неверный формат даты.❌** Используйте формат `ДД.ММ.ГГГГ` (например `01.01.1900`)", ephemeral=True)
+            await ctx.send("❌**Неверный формат даты.❌** Используйте формат `ДД.ММ.ГГГГ` (например `01.01.1900`)",
+                           ephemeral=True)
             return
 
         # сохраняем дату рождения в базу данных
@@ -63,18 +62,6 @@ class Birthday(commands.Cog):
                               colour=disnake.Colour.random())
         embed.set_thumbnail(url=user.avatar.url)
         await ctx.send(embed=embed, ephemeral=True)
-
-
-    @commands.slash_command()
-    async def check_all_bdays(self, inter):
-        """Вывести полный список пользователей и их даты рождения"""
-        cursor.execute("SELECT user_mention, birthdate FROM birthdays ORDER BY birthdate")
-        full_list_bdays = cursor.fetchall()
-        print(full_list_bdays)
-        text = ''
-        for _ in full_list_bdays:
-            text += f'Пользователь {_[0]}, дата рождения {_[1]}\n'
-        await inter.response.send_message(text)
 
     @tasks.loop(hours=24)
     async def birthday_check(self):
@@ -97,7 +84,6 @@ class Birthday(commands.Cog):
                 await asyncio.sleep(5)
                 await channel.send(embed=embed)
 
-
     @birthday_check.before_loop
     async def before_birthday_check(self):
         await self.bot.wait_until_ready()
@@ -107,6 +93,7 @@ class Birthday(commands.Cog):
         """Запуск команды проверки дней рождений"""
         self.birthday_check.restart()
         await inter.response.send_message("Задача birthday_check запущена вручную")
+
 
 def setup(bot):
     bot.add_cog(Birthday(bot))
