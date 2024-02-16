@@ -1,3 +1,5 @@
+import os
+
 import disnake
 from disnake.ext import commands, tasks
 import sqlite3
@@ -6,7 +8,8 @@ import datetime
 connection = sqlite3.connect('birthdays.db')
 cursor = connection.cursor()
 
-class YourCog(commands.Cog):
+
+class NotInGuild(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.remove_inactive_users.start()
@@ -16,7 +19,7 @@ class YourCog(commands.Cog):
         cursor.execute("SELECT user_id FROM birthdays")
         all_users = cursor.fetchall()
 
-        guild_id = 1174985884408483892  # Замените на фактический идентификатор вашего сервера
+        guild_id = os.environ['GUILD_ID']  # Замените на фактический идентификатор вашего сервера
         guild = self.bot.get_guild(guild_id)
 
         if guild:
@@ -37,5 +40,5 @@ class YourCog(commands.Cog):
         await self.bot.wait_until_ready()
 
 def setup(bot):
-    bot.add_cog(YourCog(bot))
+    bot.add_cog(NotInGuild(bot))
 
